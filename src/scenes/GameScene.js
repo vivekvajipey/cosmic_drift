@@ -256,90 +256,100 @@ export class GameScene extends Phaser.Scene {
         // Pause the game
         this.scene.pause();
         
-        // Show game over screen
-        this.scene.add('GameOverScene', {
-            create: function() {
-                // Get center coordinates
-                const width = this.cameras.main.width;
-                const height = this.cameras.main.height;
-                
-                // Create overlay
-                const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
-                overlay.setOrigin(0);
-                
-                // Create game over text
-                const titleText = this.add.text(width / 2, height / 2 - 100, 'GAME OVER', {
-                    fontFamily: 'Arial',
-                    fontSize: '48px',
-                    fontStyle: 'bold',
-                    color: '#ff0000'
-                });
-                titleText.setOrigin(0.5);
-                
-                // Add message
-                const messageText = this.add.text(width / 2, height / 2, 'Your ship has run out of fuel.', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    color: '#ffffff'
-                });
-                messageText.setOrigin(0.5);
-                
-                // Create retry button
-                const retryButton = this.add.image(width / 2, height / 2 + 80, 'button');
-                retryButton.setScale(2);
-                
-                const retryText = this.add.text(width / 2, height / 2 + 80, 'TRY AGAIN', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    color: '#ffffff'
-                });
-                retryText.setOrigin(0.5);
-                
-                // Make button interactive
-                retryButton.setInteractive();
-                
-                retryButton.on('pointerover', () => {
-                    retryButton.setTexture('button-hover');
-                });
-                
-                retryButton.on('pointerout', () => {
-                    retryButton.setTexture('button');
-                });
-                
-                retryButton.on('pointerdown', () => {
-                    // Restart the game
-                    this.scene.start('GameScene');
-                });
-                
-                // Create main menu button
-                const menuButton = this.add.image(width / 2, height / 2 + 150, 'button');
-                menuButton.setScale(2);
-                
-                const menuText = this.add.text(width / 2, height / 2 + 150, 'MAIN MENU', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    color: '#ffffff'
-                });
-                menuText.setOrigin(0.5);
-                
-                // Make button interactive
-                menuButton.setInteractive();
-                
-                menuButton.on('pointerover', () => {
-                    menuButton.setTexture('button-hover');
-                });
-                
-                menuButton.on('pointerout', () => {
-                    menuButton.setTexture('button');
-                });
-                
-                menuButton.on('pointerdown', () => {
-                    // Return to main menu
-                    this.scene.start('MainMenuScene');
-                });
-            }
-        });
+        // Create a proper GameOverScene if not already added to the scene manager
+        if (!this.scene.get('GameOverScene')) {
+            // Show game over screen
+            this.scene.add('GameOverScene', {
+                create: function() {
+                    // Get center coordinates
+                    const width = this.cameras.main.width;
+                    const height = this.cameras.main.height;
+                    
+                    // Create overlay
+                    const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
+                    overlay.setOrigin(0);
+                    
+                    // Create game over text
+                    const titleText = this.add.text(width / 2, height / 2 - 100, 'GAME OVER', {
+                        fontFamily: 'Arial',
+                        fontSize: '48px',
+                        fontStyle: 'bold',
+                        color: '#ff0000'
+                    });
+                    titleText.setOrigin(0.5);
+                    
+                    // Add message
+                    const messageText = this.add.text(width / 2, height / 2, 'Your ship has run out of fuel.', {
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        color: '#ffffff'
+                    });
+                    messageText.setOrigin(0.5);
+                    
+                    // Create retry button
+                    const retryButton = this.add.image(width / 2, height / 2 + 80, 'button');
+                    retryButton.setScale(2);
+                    
+                    const retryText = this.add.text(width / 2, height / 2 + 80, 'TRY AGAIN', {
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        color: '#ffffff'
+                    });
+                    retryText.setOrigin(0.5);
+                    
+                    // Make button interactive
+                    retryButton.setInteractive();
+                    
+                    retryButton.on('pointerover', () => {
+                        retryButton.setTexture('button-hover');
+                    });
+                    
+                    retryButton.on('pointerout', () => {
+                        retryButton.setTexture('button');
+                    });
+                    
+                    retryButton.on('pointerdown', () => {
+                        // Restart the game
+                        this.scene.stop('GameOverScene');
+                        this.scene.start('GameScene');
+                    });
+                    
+                    // Create main menu button
+                    const menuButton = this.add.image(width / 2, height / 2 + 150, 'button');
+                    menuButton.setScale(2);
+                    
+                    const menuText = this.add.text(width / 2, height / 2 + 150, 'MAIN MENU', {
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        color: '#ffffff'
+                    });
+                    menuText.setOrigin(0.5);
+                    
+                    // Make button interactive
+                    menuButton.setInteractive();
+                    
+                    menuButton.on('pointerover', () => {
+                        menuButton.setTexture('button-hover');
+                    });
+                    
+                    menuButton.on('pointerout', () => {
+                        menuButton.setTexture('button');
+                    });
+                    
+                    menuButton.on('pointerdown', () => {
+                        // Return to main menu
+                        this.scene.stop('GameOverScene');
+                        this.scene.start('MainMenuScene');
+                    });
+                }
+            });
+        }
         
-        this.scene.get('GameOverScene').scene.start();
+        // Start the GameOverScene properly
+        try {
+            this.scene.launch('GameOverScene');
+        } catch (error) {
+            console.error("Error launching GameOverScene:", error);
+        }
     }
 } 

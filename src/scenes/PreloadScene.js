@@ -81,6 +81,7 @@ export class PreloadScene extends Phaser.Scene {
         this.load.audio('upgrade', 'assets/audio/upgrade.mp3');
         this.load.audio('alert', 'assets/audio/alert.mp3');
         this.load.audio('collision', 'assets/audio/collision.mp3');
+        this.load.audio('button-click', 'assets/audio/collect.mp3');
     }
 
     create() {
