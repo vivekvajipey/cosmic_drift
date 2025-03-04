@@ -1,0 +1,11 @@
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="shipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#4a6cd4;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#2a3b78;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M32,10 L42,50 L32,45 L22,50 Z" fill="url(#shipGradient)" stroke="#1a2b58" stroke-width="2"/>
+        <circle cx="32" cy="25" r="5" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+        <rect x="30" y="45" width="4" height="8" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+    </svg>

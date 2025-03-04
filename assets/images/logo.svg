@@ -1,0 +1,11 @@
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#9B59B6;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <rect width="400" height="200" rx="20" ry="20" fill="#2C3E50" stroke="#34495E" stroke-width="4"/>
+        <text x="200" y="100" font-family="Arial" font-size="48" font-weight="bold" fill="url(#logoGradient)" text-anchor="middle" dominant-baseline="middle">COSMIC DRIFT</text>
+        <text x="200" y="140" font-family="Arial" font-size="20" fill="#ECF0F1" text-anchor="middle" dominant-baseline="middle">Space Salvage Adventure</text>
+    </svg>
