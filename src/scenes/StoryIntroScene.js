@@ -45,8 +45,11 @@ export class StoryIntroScene extends Phaser.Scene {
         });
         titleText.setOrigin(0.5);
         
+        // Create a container for the story text to better manage positioning
+        const storyTextContainer = this.add.container(width / 2, 180);
+        
         // Add story text
-        const storyText = this.add.text(width / 2, 200, 
+        const storyText = this.add.text(0, 0, 
             'In the year 2157, a catastrophic event known as "The Fracture" tore\n' +
             'through the Proxima Centauri star system, a once-thriving human colony.\n\n' +
             'You are Commander Elara Vega, a former rescue pilot for the Proxima Colonial Authority.\n' +
@@ -57,16 +60,18 @@ export class StoryIntroScene extends Phaser.Scene {
             'to navigate back toward the heart of the colony—only to find it unrecognizable.', 
             {
                 fontFamily: 'Arial',
-                fontSize: '20px',
+                fontSize: '18px',
                 color: '#ffffff',
                 align: 'center',
-                lineSpacing: 10
+                lineSpacing: 8,
+                wordWrap: { width: width - 200 }
             }
         );
         storyText.setOrigin(0.5);
+        storyTextContainer.add(storyText);
         
-        // Add level title
-        const levelTitle = this.add.text(width / 2, height - 220, 'LEVEL 1: THE OUTER RIM', {
+        // Add level title with more spacing
+        const levelTitle = this.add.text(width / 2, height - 240, 'LEVEL 1: THE OUTER RIM', {
             fontFamily: 'Arial',
             fontSize: '32px',
             fontStyle: 'bold',
@@ -76,21 +81,34 @@ export class StoryIntroScene extends Phaser.Scene {
         });
         levelTitle.setOrigin(0.5);
         
-        // Add level description
-        const levelText = this.add.text(width / 2, height - 170, 
+        // Add level description with proper spacing
+        const levelText = this.add.text(width / 2, height - 180, 
             'Your ship\'s systems are barely functioning. You need to repair essential components\n' +
-            'by collecting resources from the debris surrounding you.\n\n' +
-            'OBJECTIVE: Collect 10 metal and 5 fuel to repair your basic systems.',
+            'by collecting resources from the debris surrounding you.',
             {
                 fontFamily: 'Arial',
-                fontSize: '20px',
+                fontSize: '18px',
                 color: '#ffffff',
-                align: 'center'
+                align: 'center',
+                wordWrap: { width: width - 200 }
             }
         );
         levelText.setOrigin(0.5);
         
-        // Create start level button
+        // Add objective text with more spacing from level description
+        const objectiveText = this.add.text(width / 2, height - 120, 
+            'OBJECTIVE: Collect 10 metal and 5 fuel to repair your basic systems.',
+            {
+                fontFamily: 'Arial',
+                fontSize: '20px',
+                fontStyle: 'bold',
+                color: '#ffffff',
+                align: 'center'
+            }
+        );
+        objectiveText.setOrigin(0.5);
+        
+        // Create start level button with proper spacing
         const startButton = this.add.image(width / 2, height - 60, 'button');
         startButton.setScale(2);
         

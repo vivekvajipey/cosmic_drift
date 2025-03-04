@@ -22,6 +22,9 @@ export class GameScene extends Phaser.Scene {
         // Set level from data if provided
         if (data && data.level) {
             this.currentLevel = data.level;
+        } else {
+            // Set to 0 for free play mode
+            this.currentLevel = 0; 
         }
         
         // Set objectives based on level
@@ -420,87 +423,103 @@ export class GameScene extends Phaser.Scene {
     }
     
     showMissionIntro() {
-        if (this.showedMissionIntro) return;
-        this.showedMissionIntro = true;
+        const width = this.scale.width;
+        const height = this.scale.height;
         
-        // Pause the game
-        this.scene.pause();
+        // Create the modal container
+        this.missionModal = this.add.container(width / 2, height / 2);
+        this.missionModal.setDepth(1000); // Ensure it's on top of everything
         
-        // Get center coordinates
-        const width = this.cameras.main.width;
-        const height = this.cameras.main.height;
+        // Add semi-transparent background
+        const modalBg = this.add.rectangle(0, 0, width * 0.7, height * 0.7, 0x000000, 0.8);
+        modalBg.setStrokeStyle(2, 0x3498db);
+        this.missionModal.add(modalBg);
         
-        // Create overlay
-        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
-        overlay.setOrigin(0);
-        overlay.setScrollFactor(0);
-        
-        // Create mission title
-        let missionTitle = "MISSION OBJECTIVES";
-        if (this.currentLevel === 1) {
-            missionTitle = "LEVEL 1: THE OUTER RIM";
-        } else if (this.currentLevel === 2) {
-            missionTitle = "LEVEL 2: THE MINING COLONIES";
-        }
-        
-        const titleText = this.add.text(width / 2, height / 2 - 100, missionTitle, {
+        // Add title text
+        const missionTitle = this.add.text(0, -height * 0.25, `LEVEL ${this.currentLevel}: THE OUTER RIM`, {
             fontFamily: 'Arial',
-            fontSize: '36px',
+            fontSize: '28px',
             fontStyle: 'bold',
-            color: '#ffffff'
+            color: '#3498db',
+            align: 'center'
         });
-        titleText.setOrigin(0.5);
-        titleText.setScrollFactor(0);
+        missionTitle.setOrigin(0.5);
+        this.missionModal.add(missionTitle);
         
-        // Create mission description
-        const descText = this.add.text(width / 2, height / 2, this.objectives.description, {
+        // Add mission description
+        let missionDesc = 'Your ship\'s systems are barely functioning. You need to collect specific resources to complete repairs.';
+        const descText = this.add.text(0, -height * 0.15, missionDesc, {
             fontFamily: 'Arial',
-            fontSize: '24px',
+            fontSize: '18px',
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: width * 0.6 }
+        });
+        descText.setOrigin(0.5);
+        this.missionModal.add(descText);
+        
+        // Add objectives title
+        const objectivesTitle = this.add.text(0, -height * 0.05, 'OBJECTIVES:', {
+            fontFamily: 'Arial',
+            fontSize: '22px',
+            fontStyle: 'bold',
             color: '#ffffff',
             align: 'center'
         });
-        descText.setOrigin(0.5);
-        descText.setScrollFactor(0);
+        objectivesTitle.setOrigin(0.5);
+        this.missionModal.add(objectivesTitle);
         
-        // Create objective details
-        let objectiveDetails = "";
-        if (this.objectives.metal) {
-            objectiveDetails += `Metal: ${this.objectives.metal.collected}/${this.objectives.metal.required}\n`;
-        }
-        if (this.objectives.crystal) {
-            objectiveDetails += `Crystal: ${this.objectives.crystal.collected}/${this.objectives.crystal.required}\n`;
-        }
-        if (this.objectives.fuel) {
-            objectiveDetails += `Fuel: ${this.objectives.fuel.collected}/${this.objectives.fuel.required}\n`;
-        }
-        if (this.objectives.rescuePods) {
-            objectiveDetails += `Rescue Pods: ${this.objectives.rescuePods.rescued}/${this.objectives.rescuePods.required}\n`;
+        // Create objectives based on current level
+        let objectives = this.getCurrentLevelObjectives();
+        
+        // Add each objective
+        let yPos = height * 0.02;
+        for (const objective of objectives) {
+            const objectiveText = this.add.text(0, yPos, `• ${objective.text}: 0/${objective.target}`, {
+                fontFamily: 'Arial',
+                fontSize: '18px',
+                color: '#ffffff',
+                align: 'center'
+            });
+            objectiveText.setOrigin(0.5);
+            this.missionModal.add(objectiveText);
+            yPos += 30;
         }
         
-        const objectiveText = this.add.text(width / 2, height / 2 + 60, objectiveDetails, {
-            fontFamily: 'Arial',
-            fontSize: '20px',
-            color: '#cccccc',
-            align: 'center'
-        });
-        objectiveText.setOrigin(0.5);
-        objectiveText.setScrollFactor(0);
+        // Add continue button - ensure it's properly positioned and interactive
+        const continueButton = this.add.image(0, height * 0.25, 'button');
+        continueButton.setScale(2);
+        continueButton.setInteractive({ useHandCursor: true });
         
-        // Create continue button
-        const continueButton = this.add.image(width / 2, height / 2 + 150, 'button');
-        continueButton.setScrollFactor(0);
-        
-        const continueText = this.add.text(width / 2, height / 2 + 150, 'CONTINUE', {
+        const continueText = this.add.text(0, height * 0.25, 'CONTINUE', {
             fontFamily: 'Arial',
             fontSize: '20px',
             color: '#ffffff'
         });
         continueText.setOrigin(0.5);
-        continueText.setScrollFactor(0);
         
-        // Make button interactive
-        continueButton.setInteractive();
+        // Add everything to the modal
+        this.missionModal.add(continueButton);
+        this.missionModal.add(continueText);
         
+        // Add click handler to continue button
+        continueButton.on('pointerup', () => {
+            this.sound.play('button-click');
+            // Remove the modal with animation
+            this.tweens.add({
+                targets: this.missionModal,
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                    this.missionModal.destroy();
+                    // Resume the game
+                    this.physics.resume();
+                    this.uiManager.showGameUI();
+                }
+            });
+        });
+        
+        // Add hover effects
         continueButton.on('pointerover', () => {
             continueButton.setTexture('button-hover');
         });
@@ -509,16 +528,8 @@ export class GameScene extends Phaser.Scene {
             continueButton.setTexture('button');
         });
         
-        continueButton.on('pointerdown', () => {
-            // Resume the game
-            overlay.destroy();
-            titleText.destroy();
-            descText.destroy();
-            objectiveText.destroy();
-            continueButton.destroy();
-            continueText.destroy();
-            this.scene.resume();
-        });
+        // Pause the game while showing the mission intro
+        this.physics.pause();
     }
     
     checkLevelObjectives() {
