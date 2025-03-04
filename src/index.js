@@ -4,6 +4,7 @@ import { PreloadScene } from './scenes/PreloadScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { GameScene } from './scenes/GameScene';
 import { UpgradeScene } from './scenes/UpgradeScene';
+import { StoryIntroScene } from './scenes/StoryIntroScene';
 
 // Game configuration
 const config = {
@@ -22,6 +23,7 @@ const config = {
         BootScene,
         PreloadScene,
         MainMenuScene,
+        StoryIntroScene,
         GameScene,
         UpgradeScene
     ],

@@ -109,7 +109,7 @@ export class MainMenuScene extends Phaser.Scene {
         const startButton = this.add.image(0, 0, 'button');
         startButton.setScale(2);
         
-        const startText = this.add.text(0, 0, 'START GAME', {
+        const startText = this.add.text(0, 0, 'FREE PLAY', {
             fontFamily: 'Arial',
             fontSize: '24px',
             color: '#ffffff',
@@ -119,6 +119,24 @@ export class MainMenuScene extends Phaser.Scene {
         startText.setOrigin(0.5);
         
         startButtonGroup.add([startButtonGlow, startButton, startText]);
+        
+        // Create a story mode button
+        const storyButtonGroup = this.add.container(width / 2, height / 2 - 40);
+        const storyButtonGlow = createButtonGlow(0, 0);
+        
+        const storyButton = this.add.image(0, 0, 'button');
+        storyButton.setScale(2);
+        
+        const storyText = this.add.text(0, 0, 'STORY MODE', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        });
+        storyText.setOrigin(0.5);
+        
+        storyButtonGroup.add([storyButtonGlow, storyButton, storyText]);
         
         // Create a group for the instructions button elements
         const instructionsButtonGroup = this.add.container(width / 2, height / 2 + 120);
@@ -141,7 +159,7 @@ export class MainMenuScene extends Phaser.Scene {
         
         // Add floating animation to the buttons
         this.tweens.add({
-            targets: [startButtonGroup, instructionsButtonGroup],
+            targets: [storyButtonGroup, startButtonGroup, instructionsButtonGroup],
             y: '+=10',
             duration: 1500,
             ease: 'Sine.easeInOut',
@@ -170,6 +188,41 @@ export class MainMenuScene extends Phaser.Scene {
             angle: -360,
             duration: 40000,
             repeat: -1
+        });
+        
+        // Make the story button interactive
+        storyButton.setInteractive();
+        
+        storyButton.on('pointerover', () => {
+            storyButton.setTexture('button-hover');
+            storyButtonGlow.clear();
+            storyButtonGlow.fillStyle(0x3498db, 0.5);
+            storyButtonGlow.fillRoundedRect(-120, -40, 240, 80, 10);
+            this.tweens.add({
+                targets: storyButtonGroup,
+                scale: 1.05,
+                duration: 100
+            });
+        });
+        
+        storyButton.on('pointerout', () => {
+            storyButton.setTexture('button');
+            storyButtonGlow.clear();
+            storyButtonGlow.fillStyle(0x3498db, 0.3);
+            storyButtonGlow.fillRoundedRect(-120, -40, 240, 80, 10);
+            this.tweens.add({
+                targets: storyButtonGroup,
+                scale: 1,
+                duration: 100
+            });
+        });
+        
+        storyButton.on('pointerdown', () => {
+            this.sound.play('button-click');
+            this.cameras.main.fadeOut(500);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                this.scene.start('StoryIntroScene');
+            });
         });
         
         // Make the buttons interactive

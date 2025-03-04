@@ -6,6 +6,56 @@ import { UIManager } from '../components/UIManager';
 export class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
+        this.isGameOver = false;
+        this.hasWon = false;
+        this.currentLevel = 1; // Default to level 1
+        this.objectives = {};
+        this.showedMissionIntro = false;
+    }
+
+    init(data) {
+        // Reset game state
+        this.isGameOver = false;
+        this.hasWon = false;
+        this.showedMissionIntro = false;
+        
+        // Set level from data if provided
+        if (data && data.level) {
+            this.currentLevel = data.level;
+        }
+        
+        // Set objectives based on level
+        this.setupLevelObjectives(this.currentLevel);
+    }
+    
+    setupLevelObjectives(level) {
+        switch(level) {
+            case 1: // The Outer Rim
+                this.objectives = {
+                    metal: { required: 10, collected: 0 },
+                    fuel: { required: 5, collected: 0 },
+                    description: "Collect 10 metal and 5 fuel to repair your systems"
+                };
+                break;
+            case 2: // The Mining Colonies
+                this.objectives = {
+                    metal: { required: 15, collected: 0 },
+                    crystal: { required: 8, collected: 0 },
+                    fuel: { required: 10, collected: 0 },
+                    rescuePods: { required: 3, rescued: 0 },
+                    description: "Rescue 3 survivor pods and collect resources for repairs"
+                };
+                break;
+            // Add more levels as needed
+            default:
+                // For free play mode, just set a high victory threshold
+                this.objectives = {
+                    metal: { required: 20, collected: 0 },
+                    crystal: { required: 15, collected: 0 },
+                    artifact: { required: 5, collected: 0 },
+                    description: "Collect resources and explore the sector"
+                };
+        }
     }
 
     create() {
@@ -78,6 +128,11 @@ export class GameScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+        
+        // Show mission intro after a short delay if in a story level
+        if (this.currentLevel > 0) {
+            this.time.delayedCall(1000, this.showMissionIntro, [], this);
+        }
     }
 
     update() {
@@ -148,6 +203,17 @@ export class GameScene extends Phaser.Scene {
         // If nothing was collected, play a negative sound
         if (!collected && resourcesInRange.length > 0) {
             // Could play a "can't collect" sound here if cargo is full
+        }
+        
+        // Update objectives if in a story level
+        if (this.currentLevel > 0) {
+            // Update objectives based on collected resource
+            if (this.objectives[resourceType]) {
+                this.objectives[resourceType].collected++;
+                
+                // Check if objective is complete
+                this.checkLevelObjectives();
+            }
         }
     }
     
@@ -351,5 +417,228 @@ export class GameScene extends Phaser.Scene {
         } catch (error) {
             console.error("Error launching GameOverScene:", error);
         }
+    }
+    
+    showMissionIntro() {
+        if (this.showedMissionIntro) return;
+        this.showedMissionIntro = true;
+        
+        // Pause the game
+        this.scene.pause();
+        
+        // Get center coordinates
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+        
+        // Create overlay
+        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
+        overlay.setOrigin(0);
+        overlay.setScrollFactor(0);
+        
+        // Create mission title
+        let missionTitle = "MISSION OBJECTIVES";
+        if (this.currentLevel === 1) {
+            missionTitle = "LEVEL 1: THE OUTER RIM";
+        } else if (this.currentLevel === 2) {
+            missionTitle = "LEVEL 2: THE MINING COLONIES";
+        }
+        
+        const titleText = this.add.text(width / 2, height / 2 - 100, missionTitle, {
+            fontFamily: 'Arial',
+            fontSize: '36px',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        });
+        titleText.setOrigin(0.5);
+        titleText.setScrollFactor(0);
+        
+        // Create mission description
+        const descText = this.add.text(width / 2, height / 2, this.objectives.description, {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff',
+            align: 'center'
+        });
+        descText.setOrigin(0.5);
+        descText.setScrollFactor(0);
+        
+        // Create objective details
+        let objectiveDetails = "";
+        if (this.objectives.metal) {
+            objectiveDetails += `Metal: ${this.objectives.metal.collected}/${this.objectives.metal.required}\n`;
+        }
+        if (this.objectives.crystal) {
+            objectiveDetails += `Crystal: ${this.objectives.crystal.collected}/${this.objectives.crystal.required}\n`;
+        }
+        if (this.objectives.fuel) {
+            objectiveDetails += `Fuel: ${this.objectives.fuel.collected}/${this.objectives.fuel.required}\n`;
+        }
+        if (this.objectives.rescuePods) {
+            objectiveDetails += `Rescue Pods: ${this.objectives.rescuePods.rescued}/${this.objectives.rescuePods.required}\n`;
+        }
+        
+        const objectiveText = this.add.text(width / 2, height / 2 + 60, objectiveDetails, {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#cccccc',
+            align: 'center'
+        });
+        objectiveText.setOrigin(0.5);
+        objectiveText.setScrollFactor(0);
+        
+        // Create continue button
+        const continueButton = this.add.image(width / 2, height / 2 + 150, 'button');
+        continueButton.setScrollFactor(0);
+        
+        const continueText = this.add.text(width / 2, height / 2 + 150, 'CONTINUE', {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#ffffff'
+        });
+        continueText.setOrigin(0.5);
+        continueText.setScrollFactor(0);
+        
+        // Make button interactive
+        continueButton.setInteractive();
+        
+        continueButton.on('pointerover', () => {
+            continueButton.setTexture('button-hover');
+        });
+        
+        continueButton.on('pointerout', () => {
+            continueButton.setTexture('button');
+        });
+        
+        continueButton.on('pointerdown', () => {
+            // Resume the game
+            overlay.destroy();
+            titleText.destroy();
+            descText.destroy();
+            objectiveText.destroy();
+            continueButton.destroy();
+            continueText.destroy();
+            this.scene.resume();
+        });
+    }
+    
+    checkLevelObjectives() {
+        // Check if all objectives for this level are complete
+        let allComplete = true;
+        
+        if (this.objectives.metal && this.objectives.metal.collected < this.objectives.metal.required) {
+            allComplete = false;
+        }
+        
+        if (this.objectives.crystal && this.objectives.crystal.collected < this.objectives.crystal.required) {
+            allComplete = false;
+        }
+        
+        if (this.objectives.fuel && this.objectives.fuel.collected < this.objectives.fuel.required) {
+            allComplete = false;
+        }
+        
+        if (this.objectives.rescuePods && this.objectives.rescuePods.rescued < this.objectives.rescuePods.required) {
+            allComplete = false;
+        }
+        
+        if (allComplete) {
+            this.levelComplete();
+        }
+    }
+    
+    levelComplete() {
+        // If already completed, don't trigger again
+        if (this.hasWon) return;
+        this.hasWon = true;
+        
+        // Pause the game
+        this.scene.pause();
+        
+        // Create level complete overlay
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+        
+        // Create overlay
+        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
+        overlay.setOrigin(0);
+        overlay.setScrollFactor(0);
+        
+        // Create level complete text
+        const titleText = this.add.text(width / 2, height / 2 - 100, 'LEVEL COMPLETE!', {
+            fontFamily: 'Arial',
+            fontSize: '48px',
+            fontStyle: 'bold',
+            color: '#00ff00'
+        });
+        titleText.setOrigin(0.5);
+        titleText.setScrollFactor(0);
+        
+        // Create message
+        const messageText = this.add.text(width / 2, height / 2, 'You have successfully completed all objectives!', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff',
+            align: 'center'
+        });
+        messageText.setOrigin(0.5);
+        messageText.setScrollFactor(0);
+        
+        // Create next level button
+        const nextButton = this.add.image(width / 2, height / 2 + 80, 'button');
+        nextButton.setScale(1.5);
+        nextButton.setScrollFactor(0);
+        
+        const nextText = this.add.text(width / 2, height / 2 + 80, 'NEXT LEVEL', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff'
+        });
+        nextText.setOrigin(0.5);
+        nextText.setScrollFactor(0);
+        
+        // Create main menu button
+        const menuButton = this.add.image(width / 2, height / 2 + 150, 'button');
+        menuButton.setScale(1.5);
+        menuButton.setScrollFactor(0);
+        
+        const menuText = this.add.text(width / 2, height / 2 + 150, 'MAIN MENU', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff'
+        });
+        menuText.setOrigin(0.5);
+        menuText.setScrollFactor(0);
+        
+        // Make buttons interactive
+        nextButton.setInteractive();
+        
+        nextButton.on('pointerover', () => {
+            nextButton.setTexture('button-hover');
+        });
+        
+        nextButton.on('pointerout', () => {
+            nextButton.setTexture('button');
+        });
+        
+        nextButton.on('pointerdown', () => {
+            // Go to next level
+            const nextLevel = this.currentLevel + 1;
+            this.scene.start('StoryIntroScene', { level: nextLevel });
+        });
+        
+        menuButton.setInteractive();
+        
+        menuButton.on('pointerover', () => {
+            menuButton.setTexture('button-hover');
+        });
+        
+        menuButton.on('pointerout', () => {
+            menuButton.setTexture('button');
+        });
+        
+        menuButton.on('pointerdown', () => {
+            // Go to main menu
+            this.scene.start('MainMenuScene');
+        });
     }
 } 

@@ -10,6 +10,11 @@ export class UIManager {
         this.height = scene.cameras.main.height;
         
         this.createUI();
+        
+        // Add mission objectives if in story mode
+        if (this.scene.currentLevel > 0) {
+            this.createMissionObjectives();
+        }
     }
     
     createUI() {
@@ -169,6 +174,65 @@ export class UIManager {
         this.pauseHint.setScrollFactor(0);
     }
     
+    createMissionObjectives() {
+        // Create mission objective panel in top right
+        this.objectivePanel = this.scene.add.rectangle(this.width - 200, 250, 180, 120, 0x000000, 0.7);
+        this.objectivePanel.setOrigin(0.5);
+        this.objectivePanel.setScrollFactor(0);
+        this.objectivePanel.setStrokeStyle(1, 0xffffff);
+        
+        // Add mission title
+        this.missionTitle = this.scene.add.text(this.width - 200, 200, 'OBJECTIVES', {
+            fontFamily: 'Arial',
+            fontSize: '16px',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        });
+        this.missionTitle.setOrigin(0.5);
+        this.missionTitle.setScrollFactor(0);
+        
+        // Create objective text
+        this.objectiveText = this.scene.add.text(this.width - 280, 220, '', {
+            fontFamily: 'Arial',
+            fontSize: '14px',
+            color: '#ffffff',
+            wordWrap: { width: 160 }
+        });
+        this.objectiveText.setScrollFactor(0);
+        
+        // Update objective text
+        this.updateObjectives();
+    }
+    
+    updateObjectives() {
+        if (!this.objectiveText || this.scene.currentLevel <= 0) return;
+        
+        let text = '';
+        const objectives = this.scene.objectives;
+        
+        if (objectives.metal) {
+            const complete = objectives.metal.collected >= objectives.metal.required;
+            text += `${complete ? '✓' : '•'} Metal: ${objectives.metal.collected}/${objectives.metal.required}\n`;
+        }
+        
+        if (objectives.crystal) {
+            const complete = objectives.crystal.collected >= objectives.crystal.required;
+            text += `${complete ? '✓' : '•'} Crystal: ${objectives.crystal.collected}/${objectives.crystal.required}\n`;
+        }
+        
+        if (objectives.fuel) {
+            const complete = objectives.fuel.collected >= objectives.fuel.required;
+            text += `${complete ? '✓' : '•'} Fuel: ${objectives.fuel.collected}/${objectives.fuel.required}\n`;
+        }
+        
+        if (objectives.rescuePods) {
+            const complete = objectives.rescuePods.rescued >= objectives.rescuePods.required;
+            text += `${complete ? '✓' : '•'} Rescue Pods: ${objectives.rescuePods.rescued}/${objectives.rescuePods.required}\n`;
+        }
+        
+        this.objectiveText.setText(text);
+    }
+    
     update(worldBounds, sectorGenerator) {
         // Update fuel bar
         const fuelPercent = this.ship.fuel / this.ship.maxFuel;
@@ -234,6 +298,11 @@ export class UIManager {
                 resource.minimapIndicator.setVisible(false);
             }
         });
+        
+        // Update mission objectives if in story mode
+        if (this.scene.currentLevel > 0) {
+            this.updateObjectives();
+        }
     }
     
     showPauseMenu() {
@@ -390,5 +459,10 @@ export class UIManager {
         if (this.collectionHint) {
             this.collectionHint.destroy();
         }
+        
+        // Destroy mission objective elements if they exist
+        if (this.objectivePanel) this.objectivePanel.destroy();
+        if (this.missionTitle) this.missionTitle.destroy();
+        if (this.objectiveText) this.objectiveText.destroy();
     }
 } 
