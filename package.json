@@ -18,6 +18,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "extract-zip": "^2.0.1",
     "phaser": "^3.60.0"
   },
   "devDependencies": {
@@ -30,4 +31,4 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
   }
-} 
+}
